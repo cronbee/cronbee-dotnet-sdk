@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Cronbee-SDK-Tests/Cronbee-SDK-Tests.csproj" Id="4af4318e-3ff8-47bb-b5d5-ec45276b27c3" />
   <Project Path="Cronbee-SDK/Cronbee-SDK.csproj" />
 </Solution>

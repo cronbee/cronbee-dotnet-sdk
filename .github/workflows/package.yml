@@ -31,3 +31,4 @@ jobs:
           overwrite: true
           path: |
             BuildOutput
+            !BuildOutput/*.json
