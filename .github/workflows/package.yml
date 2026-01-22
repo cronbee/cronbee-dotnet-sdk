@@ -1,0 +1,33 @@
+name: Package
+on:
+  workflow_run:
+    workflows:
+      - Test
+    types:
+      - completed
+    branches:
+      - main    
+jobs:
+  publish-artifacts:
+    runs-on: windows-2022
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build project
+        run: dotnet publish -c Release -o BuildOutput
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cronbee-dotnet-sdk
+          retention-days: 7
+          overwrite: true
+          path: |
+            BuildOutput

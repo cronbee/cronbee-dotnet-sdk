@@ -1,0 +1,62 @@
+name: Analysis
+on:
+  push:
+    branches: [ dev, main ]
+  pull_request:
+    branches: [ dev ]
+
+defaults:
+    run:
+        shell: bash
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
+      
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4.2.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Set up JDK 17 (Required for SonarQube)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~\.sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build and analyze with SonarQube
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Cronbee-dotnet-sdk" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          dotnet build
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
