@@ -33,7 +33,7 @@ public class CronbeeSession
     /// <param name="eventName">The event name to be triggered</param>
     public void Event(string eventName)
     {
-        ParseResponse(_netInterface.Get($"/monitor/{_monitorId}/event/{eventName}?token={_token}"));
+        ParseResponse(_netInterface.Get($"/monitor/{_monitorId}/event/{eventName.Replace(' ', '-')}?token={_token}"));
     }
 
     /// <summary>
