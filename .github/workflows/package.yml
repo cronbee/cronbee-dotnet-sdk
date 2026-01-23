@@ -22,13 +22,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build project
-        run: dotnet publish -c Release -o BuildOutput
+        run: dotnet build -c Release -o BuildOutput
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Cronbee-dotnet-sdk
           retention-days: 7
           overwrite: true
-          path: |
-            BuildOutput
-            !BuildOutput/*.json
+          path: BuildOutput/**/*.nupkg
+      - name: upload to NuGet
+        run: |
+          dotnet nuget push BuildOutput/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate    
